@@ -47,6 +47,9 @@ typedef enum _sai_port_type_t
     /** Fabric Port */
     SAI_PORT_TYPE_FABRIC,
 
+    /** Recycle Port */
+    SAI_PORT_TYPE_RECYCLE,
+
 } sai_port_type_t;
 
 /**
@@ -309,25 +312,6 @@ typedef enum _sai_port_link_training_rx_status_t
     /** Receiver trained */
     SAI_PORT_LINK_TRAINING_RX_STATUS_TRAINED,
 } sai_port_link_training_rx_status_t;
-
-/**
- * @brief Attribute data for #SAI_PORT_ATTR_PRBS_RX_STATUS
- */
-typedef enum _sai_port_prbs_rx_status_t
-{
-    /** PRBS is locked and error_count is 0 */
-    SAI_PORT_PRBS_RX_STATUS_OK,
-
-    /** PRBS is locked, but there are errors */
-    SAI_PORT_PRBS_RX_STATUS_LOCK_WITH_ERRORS,
-
-    /** PRBS not locked */
-    SAI_PORT_PRBS_RX_STATUS_NOT_LOCKED,
-
-    /** PRBS locked but there is loss of lock since last call */
-    SAI_PORT_PRBS_RX_STATUS_LOST_LOCK,
-
-} sai_port_prbs_rx_status_t;
 
 /**
  * @brief Attribute data for #SAI_PORT_ATTR_PRBS_CONFIG
@@ -1567,6 +1551,16 @@ typedef enum _sai_port_attr_t
     SAI_PORT_ATTR_PRBS_RX_STATUS,
 
     /**
+     * @brief Attribute data for #SAI_PORT_ATTR_PRBS_RX_STATE
+     * Used for clear on read status/count register.
+     * Adapter should return SAI_STATUS_NOT_SUPPORTED if not supported.
+     *
+     * @type sai_prbs_rx_state_t
+     * @flags READ_ONLY
+     */
+    SAI_PORT_ATTR_PRBS_RX_STATE,
+
+    /**
      * @brief Attribute data for #SAI_PORT_ATTR_AUTO_NEG_STATUS
      *
      * Auto negotiation (AN) done state: 0 for AN in progress, 0 for AN done
@@ -2745,11 +2739,11 @@ typedef enum _sai_port_serdes_attr_t
     /**
      * @brief Port serdes control pre-emphasis
      *
-     * List of port serdes pre-emphasis values. The values are of type sai_u32_list_t
+     * List of port serdes pre-emphasis values. The values are of type sai_s32_list_t
      * where the count is number lanes in a port and the list specifies list of values
      * to be applied to each lane.
      *
-     * @type sai_u32_list_t
+     * @type sai_s32_list_t
      * @flags CREATE_ONLY
      * @default internal
      */
@@ -2758,11 +2752,11 @@ typedef enum _sai_port_serdes_attr_t
     /**
      * @brief Port serdes control idriver
      *
-     * List of port serdes idriver values. The values are of type sai_u32_list_t
+     * List of port serdes idriver values. The values are of type sai_s32_list_t
      * where the count is number lanes in a port and the list specifies list of values
      * to be applied to each lane.
      *
-     * @type sai_u32_list_t
+     * @type sai_s32_list_t
      * @flags CREATE_ONLY
      * @default internal
      */
@@ -2771,11 +2765,11 @@ typedef enum _sai_port_serdes_attr_t
     /**
      * @brief Port serdes control pre-emphasis
      *
-     * List of port serdes ipredriver values. The values are of type sai_u32_list_t
+     * List of port serdes ipredriver values. The values are of type sai_s32_list_t
      * where the count is number lanes in a port and the list specifies list of values
      * to be applied to each lane.
      *
-     * @type sai_u32_list_t
+     * @type sai_s32_list_t
      * @flags CREATE_ONLY
      * @default internal
      */
@@ -2785,10 +2779,10 @@ typedef enum _sai_port_serdes_attr_t
      * @brief Port serdes control TX FIR PRE1 filter
      *
      * List of port serdes TX fir precursor1 tap-filter values.
-     * The values are of type sai_u32_list_t where the count is number lanes in
+     * The values are of type sai_s32_list_t where the count is number lanes in
      * a port and the list specifies list of values to be applied to each lane.
      *
-     * @type sai_u32_list_t
+     * @type sai_s32_list_t
      * @flags CREATE_ONLY
      * @default internal
      */
@@ -2798,10 +2792,10 @@ typedef enum _sai_port_serdes_attr_t
      * @brief Port serdes control TX FIR PRE2 filter
      *
      * List of port serdes TX fir precursor2 tap-filter values.
-     * The values are of type sai_u32_list_t where the count is number lanes in
+     * The values are of type sai_s32_list_t where the count is number lanes in
      * a port and the list specifies list of values to be applied to each lane.
      *
-     * @type sai_u32_list_t
+     * @type sai_s32_list_t
      * @flags CREATE_ONLY
      * @default internal
      */
@@ -2811,10 +2805,10 @@ typedef enum _sai_port_serdes_attr_t
      * @brief Port serdes control TX FIR PRE3 filter
      *
      * List of port serdes TX fir precursor3 tap-filter values.
-     * The values are of type sai_u32_list_t where the count is number lanes in
+     * The values are of type sai_s32_list_t where the count is number lanes in
      * a port and the list specifies list of values to be applied to each lane.
      *
-     * @type sai_u32_list_t
+     * @type sai_s32_list_t
      * @flags CREATE_ONLY
      * @default internal
      */
@@ -2824,10 +2818,10 @@ typedef enum _sai_port_serdes_attr_t
      * @brief Port serdes control TX FIR MAIN filter
      *
      * List of port serdes TX fir maincursor tap-filter values.
-     * The values are of type sai_u32_list_t where the count is number lanes in
+     * The values are of type sai_s32_list_t where the count is number lanes in
      * a port and the list specifies list of values to be applied to each lane.
      *
-     * @type sai_u32_list_t
+     * @type sai_s32_list_t
      * @flags CREATE_ONLY
      * @default internal
      */
@@ -2837,10 +2831,10 @@ typedef enum _sai_port_serdes_attr_t
      * @brief Port serdes control TX FIR POST1 filter
      *
      * List of port serdes TX fir postcursor1 tap-filter values.
-     * The values are of type sai_u32_list_t where the count is number lanes in
+     * The values are of type sai_s32_list_t where the count is number lanes in
      * a port and the list specifies list of values to be applied to each lane.
      *
-     * @type sai_u32_list_t
+     * @type sai_s32_list_t
      * @flags CREATE_ONLY
      * @default internal
      */
@@ -2850,10 +2844,10 @@ typedef enum _sai_port_serdes_attr_t
      * @brief Port serdes control TX FIR POST2 filter
      *
      * List of port serdes TX fir postcursor2 tap-filter values.
-     * The values are of type sai_u32_list_t where the count is number lanes in
+     * The values are of type sai_s32_list_t where the count is number lanes in
      * a port and the list specifies list of values to be applied to each lane.
      *
-     * @type sai_u32_list_t
+     * @type sai_s32_list_t
      * @flags CREATE_ONLY
      * @default internal
      */
@@ -2863,10 +2857,10 @@ typedef enum _sai_port_serdes_attr_t
      * @brief Port serdes control TX FIR POST3 filter
      *
      * List of port serdes TX fir postcursor3 tap-filter values.
-     * The values are of type sai_u32_list_t where the count is number lanes in
+     * The values are of type sai_s32_list_t where the count is number lanes in
      * a port and the list specifies list of values to be applied to each lane.
      *
-     * @type sai_u32_list_t
+     * @type sai_s32_list_t
      * @flags CREATE_ONLY
      * @default internal
      */
@@ -2876,10 +2870,10 @@ typedef enum _sai_port_serdes_attr_t
      * @brief Port serdes control TX FIR attenuation
      *
      * List of port serdes TX fir attn values.
-     * The values are of type sai_u32_list_t where the count is number lanes in
+     * The values are of type sai_s32_list_t where the count is number lanes in
      * a port and the list specifies list of values to be applied to each lane.
      *
-     * @type sai_u32_list_t
+     * @type sai_s32_list_t
      * @flags CREATE_ONLY
      * @default internal
      */
